@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Ensure the storage directory exists
-	const storageDir = "/root/fileStorage"
+	const storageDir = "/home/myCurseWork/fileStorage"
 	err := os.MkdirAll(storageDir, os.ModePerm)
 	if err != nil {
 		log.Fatalf("Failed to create storage directory: %v", err)
