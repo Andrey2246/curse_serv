@@ -20,6 +20,7 @@ func main() {
 	http.HandleFunc("/upload", handlers.UploadHandler(storageDir))
 	http.HandleFunc("/list", handlers.ListHandler)
 	http.HandleFunc("/download", handlers.DownloadHandler(storageDir))
+	http.HandleFunc("/wipe", handlers.WipeHandler(storageDir, "secure-passphrase"))
 
 	// Start the server
 	log.Println("Server running on :8080")
