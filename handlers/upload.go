@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"curse_serv/logger"
 	"database/sql"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -19,7 +21,7 @@ func UploadHandler(storageDir string) http.HandlerFunc {
 		}
 
 		// Parse the multipart form
-		err := r.ParseMultipartForm(100 << 20) // 100 MB max
+		err := r.ParseMultipartForm(20 << 20) // 20 MB max
 		if err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			return
@@ -55,7 +57,7 @@ func UploadHandler(storageDir string) http.HandlerFunc {
 		}
 
 		// Log metadata in the database
-		db, err := sql.Open("postgres", "your_connection_string_here")
+		db, err := sql.Open("postgres", "postgresql://cursework:security@localhost:5432/")
 		if err != nil {
 			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
 			return
@@ -69,6 +71,10 @@ func UploadHandler(storageDir string) http.HandlerFunc {
 		if err != nil {
 			http.Error(w, "Failed to save metadata", http.StatusInternalServerError)
 			return
+		}
+
+		if err := logger.Log("Upload", fmt.Sprintf("File '%s' uploaded by '%s'", header.Filename, uploader)); err != nil {
+			log.Printf("Failed to log upload action: %v", err)
 		}
 
 		fmt.Fprintf(w, "File uploaded successfully")

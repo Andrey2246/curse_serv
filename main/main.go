@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Ensure the storage directory exists
-	const storageDir = "/home/myCurseWork/fileStorage"
+	const storageDir = "/home/cursework/fileStorage"
 	err := os.MkdirAll(storageDir, os.ModePerm)
 	if err != nil {
 		log.Fatalf("Failed to create storage directory: %v", err)
@@ -20,7 +20,9 @@ func main() {
 	http.HandleFunc("/upload", handlers.UploadHandler(storageDir))
 	http.HandleFunc("/list", handlers.ListHandler)
 	http.HandleFunc("/download", handlers.DownloadHandler(storageDir))
-	http.HandleFunc("/wipe", handlers.WipeHandler(storageDir, "secure-passphrase"))
+	http.HandleFunc("/wipe", handlers.WipeHandler(storageDir))
+
+	defer handlers.WipeHandler(storageDir)
 
 	// Start the server
 	log.Println("Server running on :8080")

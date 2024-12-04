@@ -1,33 +1,25 @@
 package handlers
 
 import (
+	"curse_serv/logger"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 
 	_ "github.com/lib/pq"
 )
 
-func WipeHandler(storageDir string, passphrase string) http.HandlerFunc {
+func WipeHandler(storageDir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 			return
 		}
 
-		// Optional passphrase for additional protection
-		if passphrase != "" {
-			providedPassphrase := r.FormValue("passphrase")
-			if providedPassphrase != passphrase {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-		}
-
 		// Delete all files in the storage directory
-		files, err := ioutil.ReadDir(storageDir)
+		files, err := os.ReadDir(storageDir)
 		if err != nil {
 			http.Error(w, "Failed to read storage directory", http.StatusInternalServerError)
 			return
@@ -42,7 +34,7 @@ func WipeHandler(storageDir string, passphrase string) http.HandlerFunc {
 		}
 
 		// Clear the database
-		db, err := sql.Open("postgres", "your_connection_string_here")
+		db, err := sql.Open("postgres", "postgresql://cursework:security@localhost:5432/")
 		if err != nil {
 			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
 			return
@@ -53,6 +45,11 @@ func WipeHandler(storageDir string, passphrase string) http.HandlerFunc {
 		if err != nil {
 			http.Error(w, "Failed to clear database", http.StatusInternalServerError)
 			return
+		}
+		log.Println("Database cleared")
+
+		if err := logger.Log("Wipe", "All files wiped from server"); err != nil {
+			log.Printf("Failed to log wipe action: %v", err)
 		}
 
 		w.WriteHeader(http.StatusOK)
